@@ -968,8 +968,8 @@ unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
       // about removing empty lines on closing blocks. Special case them here.
       MaxEmptyLinesToKeep = 1;
     }
-    unsigned Newlines =
-        std::max(1u, std::min(Current.NewlinesBefore, MaxEmptyLinesToKeep));
+    unsigned Newlines = std::max(
+        1u, std::min((unsigned)Current.NewlinesBefore, MaxEmptyLinesToKeep));
     bool ContinuePPDirective =
         State.Line->InPPDirective && State.Line->Type != LT_ImportStatement;
     Whitespaces.replaceWhitespace(Current, Newlines, State.Column, State.Column,
@@ -1361,7 +1361,7 @@ unsigned ContinuationIndenter::moveStateToNextToken(LineState &State,
   if (!Current.opensScope() && !Current.closesScope() &&
       !Current.is(TT_PointerOrReference)) {
     State.LowestLevelOnLine =
-        std::min(State.LowestLevelOnLine, Current.NestingLevel);
+        std::min(State.LowestLevelOnLine, (unsigned)Current.NestingLevel);
   }
   if (Current.isMemberAccess())
     CurrentState.StartOfFunctionCall = !Current.NextOperator ? 0 : State.Column;

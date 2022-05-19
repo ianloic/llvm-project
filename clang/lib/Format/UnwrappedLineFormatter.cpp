@@ -1398,14 +1398,14 @@ void UnwrappedLineFormatter::formatFirstToken(
     unsigned NewlineIndent) {
   FormatToken &RootToken = *Line.First;
   if (RootToken.is(tok::eof)) {
-    unsigned Newlines = std::min(RootToken.NewlinesBefore, 1u);
+    unsigned Newlines = std::min((unsigned)RootToken.NewlinesBefore, 1u);
     unsigned TokenIndent = Newlines ? NewlineIndent : 0;
     Whitespaces->replaceWhitespace(RootToken, Newlines, TokenIndent,
                                    TokenIndent);
     return;
   }
-  unsigned Newlines =
-      std::min(RootToken.NewlinesBefore, Style.MaxEmptyLinesToKeep + 1);
+  unsigned Newlines = std::min((unsigned)RootToken.NewlinesBefore,
+                               Style.MaxEmptyLinesToKeep + 1);
   // Remove empty lines before "}" where applicable.
   if (RootToken.is(tok::r_brace) &&
       (!RootToken.Next ||
@@ -1440,7 +1440,7 @@ void UnwrappedLineFormatter::formatFirstToken(
         Newlines = 1;
       break;
     case FormatStyle::ELBAMS_Leave:
-      Newlines = std::max(RootToken.NewlinesBefore, 1u);
+      Newlines = std::max((unsigned)RootToken.NewlinesBefore, 1u);
       break;
     case FormatStyle::ELBAMS_LogicalBlock:
       if (PreviousLine->Last->isOneOf(tok::semi, tok::r_brace) && Newlines <= 1)

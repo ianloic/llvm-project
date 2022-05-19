@@ -2719,7 +2719,7 @@ void TokenAnnotator::setCommentLineLevels(
 }
 
 static unsigned maxNestingDepth(const AnnotatedLine &Line) {
-  unsigned Result = 0;
+  uint16_t Result = 0;
   for (const auto *Tok = Line.First; Tok != nullptr; Tok = Tok->Next)
     Result = std::max(Result, Tok->NestingLevel);
   return Result;

@@ -391,30 +391,30 @@ public:
   ///
   /// This can be used to determine what the user wrote in the original code
   /// and thereby e.g. leave an empty line between two function definitions.
-  unsigned NewlinesBefore = 0;
+  uint16_t NewlinesBefore = 0;
 
   /// The offset just past the last '\n' in this token's leading
   /// whitespace (relative to \c WhiteSpaceStart). 0 if there is no '\n'.
-  unsigned LastNewlineOffset = 0;
+  uint16_t LastNewlineOffset = 0;
 
   /// The width of the non-whitespace parts of the token (or its first
   /// line for multi-line tokens) in columns.
   /// We need this to correctly measure number of columns a token spans.
-  unsigned ColumnWidth = 0;
+  uint16_t ColumnWidth = 0;
 
   /// Contains the width in columns of the last line of a multi-line
   /// token.
-  unsigned LastLineColumnWidth = 0;
+  uint16_t LastLineColumnWidth = 0;
 
   /// The number of spaces that should be inserted before this token.
-  unsigned SpacesRequiredBefore = 0;
+  uint16_t SpacesRequiredBefore = 0;
 
   /// Number of parameters, if this is "(", "[" or "<".
-  unsigned ParameterCount = 0;
+  uint8_t ParameterCount = 0;
 
   /// Number of parameters that are nested blocks,
   /// if this is "(", "[" or "<".
-  unsigned BlockParameterCount = 0;
+  uint8_t BlockParameterCount = 0;
 
   /// If this is a bracket ("<", "(", "[" or "{"), contains the kind of
   /// the surrounding bracket.
@@ -422,47 +422,47 @@ public:
 
   /// The total length of the unwrapped line up to and including this
   /// token.
-  unsigned TotalLength = 0;
+  uint16_t TotalLength = 0;
 
   /// The original 0-based column of this token, including expanded tabs.
   /// The configured TabWidth is used as tab width.
-  unsigned OriginalColumn = 0;
+  uint16_t OriginalColumn = 0;
 
   /// The length of following tokens until the next natural split point,
   /// or the next token that can be broken.
-  unsigned UnbreakableTailLength = 0;
+  uint16_t UnbreakableTailLength = 0;
 
   // FIXME: Come up with a 'cleaner' concept.
   /// The binding strength of a token. This is a combined value of
   /// operator precedence, parenthesis nesting, etc.
-  unsigned BindingStrength = 0;
+  uint16_t BindingStrength = 0;
 
   /// The nesting level of this token, i.e. the number of surrounding (),
   /// [], {} or <>.
-  unsigned NestingLevel = 0;
+  uint16_t NestingLevel = 0;
 
   /// The indent level of this token. Copied from the surrounding line.
-  unsigned IndentLevel = 0;
+  uint16_t IndentLevel = 0;
 
   /// Penalty for inserting a line break before this token.
-  unsigned SplitPenalty = 0;
+  uint16_t SplitPenalty = 0;
 
   /// If this is the first ObjC selector name in an ObjC method
   /// definition or call, this contains the length of the longest name.
   ///
   /// This being set to 0 means that the selectors should not be colon-aligned,
   /// e.g. because several of them are block-type.
-  unsigned LongestObjCSelectorName = 0;
+  uint16_t LongestObjCSelectorName = 0;
 
   /// If this is the first ObjC selector name in an ObjC method
   /// definition or call, this contains the number of parts that the whole
   /// selector consist of.
-  unsigned ObjCSelectorNameParts = 0;
+  uint16_t ObjCSelectorNameParts = 0;
 
   /// The 0-based index of the parameter/argument. For ObjC it is set
   /// for the selector name token.
   /// For now calculated only for ObjC.
-  unsigned ParameterIndex = 0;
+  uint16_t ParameterIndex = 0;
 
   /// Stores the number of required fake parentheses and the
   /// corresponding operator precedence.
@@ -471,11 +471,11 @@ public:
   /// reverse order, i.e. inner fake parenthesis first.
   SmallVector<prec::Level, 4> FakeLParens;
   /// Insert this many fake ) after this token for correct indentation.
-  unsigned FakeRParens = 0;
+  uint16_t FakeRParens = 0;
 
   /// If this is an operator (or "."/"->") in a sequence of operators
   /// with the same precedence, contains the 0-based operator index.
-  unsigned OperatorIndex = 0;
+  uint16_t OperatorIndex = 0;
 
   /// If this is an operator (or "."/"->") in a sequence of operators
   /// with the same precedence, points to the next operator.
