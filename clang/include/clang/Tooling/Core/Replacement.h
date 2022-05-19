@@ -215,6 +215,10 @@ public:
   using const_reverse_iterator = ReplacementsImpl::const_reverse_iterator;
 
   Replacements() = default;
+  Replacements(const Replacements &) = default;
+  Replacements &operator=(const Replacements &) = default;
+  Replacements(Replacements &&) noexcept = default;
+  Replacements &operator=(Replacements &&) noexcept = default;
 
   explicit Replacements(const Replacement &R) { Replaces.insert(R); }
 
@@ -255,7 +259,7 @@ public:
   /// Replacements with offset UINT_MAX are special - we do not detect conflicts
   /// for such replacements since users may add them intentionally as a special
   /// category of replacements.
-  llvm::Error add(const Replacement &R);
+  llvm::Error add(Replacement R);
 
   /// Merges \p Replaces into the current replacements. \p Replaces
   /// refers to code after applying the current replacements.
@@ -351,9 +355,9 @@ calculateRangesAfterReplacements(const Replacements &Replaces,
 /// If there are multiple <File, Replacements> pairs with the same file
 /// entry, we only keep one pair and discard the rest.
 /// If a file does not exist, its corresponding replacements will be ignored.
-std::map<std::string, Replacements> groupReplacementsByFile(
-    FileManager &FileMgr,
-    const std::map<std::string, Replacements> &FileToReplaces);
+std::map<std::string, Replacements>
+groupReplacementsByFile(FileManager &FileMgr,
+                        std::map<std::string, Replacements> &&FileToReplaces);
 
 template <typename Node>
 Replacement::Replacement(const SourceManager &Sources,

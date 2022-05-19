@@ -153,7 +153,7 @@ public:
         parseModuleReferences(Keywords, AnnotatedLines);
 
     if (References.empty())
-      return {Result, 0};
+      return {std::move(Result), 0};
 
     // The text range of all parsed imports, to be replaced later.
     SourceRange InsertionPoint = References[0].Range;
@@ -179,7 +179,7 @@ public:
     }
     llvm::StringRef PreviousText = getSourceText(InsertionPoint);
     if (ReferencesText == PreviousText)
-      return {Result, 0};
+      return {std::move(Result), 0};
 
     // The loop above might collapse previously existing line breaks between
     // import blocks, and thus shrink the file. SortIncludes must not shrink
@@ -213,7 +213,7 @@ public:
       assert(false);
     }
 
-    return {Result, 0};
+    return {std::move(Result), 0};
   }
 
 private:

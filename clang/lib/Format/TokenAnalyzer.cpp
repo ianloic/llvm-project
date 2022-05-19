@@ -136,8 +136,8 @@ std::pair<tooling::Replacements, unsigned> TokenAnalyzer::process() {
       delete Line;
 
     Penalty += RunResult.second;
-    for (const auto &R : RunResult.first) {
-      auto Err = Result.add(R);
+    for (auto &R : RunResult.first) {
+      auto Err = Result.add(std::move(R));
       // FIXME: better error handling here. For now, simply return an empty
       // Replacements to indicate failure.
       if (Err) {
@@ -146,7 +146,7 @@ std::pair<tooling::Replacements, unsigned> TokenAnalyzer::process() {
       }
     }
   }
-  return {Result, Penalty};
+  return {std::move(Result), Penalty};
 }
 
 void TokenAnalyzer::consumeUnwrappedLine(const UnwrappedLine &TheLine) {

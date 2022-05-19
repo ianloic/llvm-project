@@ -1851,7 +1851,7 @@ public:
     AffectedRangeMgr.computeAffectedLines(AnnotatedLines);
     tooling::Replacements Result;
     insertBraces(AnnotatedLines, Result);
-    return {Result, 0};
+    return {std::move(Result), 0};
   }
 
 private:
@@ -1895,7 +1895,7 @@ public:
     AffectedRangeMgr.computeAffectedLines(AnnotatedLines);
     tooling::Replacements Result;
     removeBraces(AnnotatedLines, Result);
-    return {Result, 0};
+    return {std::move(Result), 0};
   }
 
 private:
@@ -1943,7 +1943,7 @@ public:
     AffectedRangeMgr.computeAffectedLines(AnnotatedLines);
     tooling::Replacements Result;
     requoteJSStringLiteral(AnnotatedLines, Result);
-    return {Result, 0};
+    return {std::move(Result), 0};
   }
 
 private:
@@ -2058,8 +2058,8 @@ public:
                     /*LastStartColumn=*/Env.getLastStartColumn());
     for (const auto &R : Whitespaces.generateReplacements())
       if (Result.add(R))
-        return std::make_pair(Result, 0);
-    return std::make_pair(Result, Penalty);
+        return std::make_pair(std::move(Result), 0);
+    return std::make_pair(std::move(Result), Penalty);
   }
 
 private:
@@ -2171,7 +2171,7 @@ public:
     AffectedRangeMgr.computeAffectedLines(AnnotatedLines);
     tooling::Replacements Result;
     insertTrailingCommas(AnnotatedLines, Result);
-    return {Result, 0};
+    return {std::move(Result), 0};
   }
 
 private:
@@ -2456,7 +2456,7 @@ public:
     IsObjC = guessIsObjC(Env.getSourceManager(), AnnotatedLines,
                          Tokens.getKeywords());
     tooling::Replacements Result;
-    return {Result, 0};
+    return {std::move(Result), 0};
   }
 
   bool isObjC() { return IsObjC; }
@@ -2879,7 +2879,7 @@ tooling::Replacements sortCppIncludes(const FormatStyle &Style, StringRef Code,
     sortCppIncludes(Style, IncludesInBlock, Ranges, FileName, Code, Replaces,
                     Cursor);
   }
-  return Replaces;
+  return std::move(Replaces);
 }
 
 // Returns group number to use as a first order sort on imports. Gives UINT_MAX
@@ -3014,7 +3014,7 @@ tooling::Replacements sortJavaImports(const FormatStyle &Style, StringRef Code,
       if (FormattingOff) {
         // If at least one import line has formatting turned off, turn off
         // formatting entirely.
-        return Replaces;
+        return std::move(Replaces);
       }
       StringRef Static = Matches[1];
       StringRef Identifier = Matches[2];
@@ -3035,7 +3035,7 @@ tooling::Replacements sortJavaImports(const FormatStyle &Style, StringRef Code,
   }
   if (!ImportsInBlock.empty())
     sortJavaImports(Style, ImportsInBlock, Ranges, FileName, Code, Replaces);
-  return Replaces;
+  return std::move(Replaces);
 }
 
 bool isMpegTS(StringRef Code) {
@@ -3125,11 +3125,11 @@ inline bool isHeaderDeletion(const tooling::Replacement &Replace) {
 }
 
 // FIXME: insert empty lines between newly created blocks.
-tooling::Replacements
-fixCppIncludeInsertions(StringRef Code, const tooling::Replacements &Replaces,
-                        const FormatStyle &Style) {
+tooling::Replacements fixCppIncludeInsertions(StringRef Code,
+                                              tooling::Replacements &&Replaces,
+                                              const FormatStyle &Style) {
   if (!Style.isCpp())
-    return Replaces;
+    return std::move(Replaces);
 
   tooling::Replacements HeaderInsertions;
   std::set<llvm::StringRef> HeadersToDelete;
@@ -3150,7 +3150,7 @@ fixCppIncludeInsertions(StringRef Code, const tooling::Replacements &Replaces,
     }
   }
   if (HeaderInsertions.empty() && HeadersToDelete.empty())
-    return Replaces;
+    return std::move(Replaces);
 
   StringRef FileName = Replaces.begin()->getFilePath();
   tooling::HeaderIncludes Includes(FileName, Code, Style.IncludeStyle);
@@ -3198,7 +3198,7 @@ fixCppIncludeInsertions(StringRef Code, const tooling::Replacements &Replaces,
 } // anonymous namespace
 
 llvm::Expected<tooling::Replacements>
-cleanupAroundReplacements(StringRef Code, const tooling::Replacements &Replaces,
+cleanupAroundReplacements(StringRef Code, tooling::Replacements &&Replaces,
                           const FormatStyle &Style) {
   // We need to use lambda function here since there are two versions of
   // `cleanup`.
@@ -3209,7 +3209,7 @@ cleanupAroundReplacements(StringRef Code, const tooling::Replacements &Replaces,
   };
   // Make header insertion replacements insert new headers into correct blocks.
   tooling::Replacements NewReplaces =
-      fixCppIncludeInsertions(Code, Replaces, Style);
+      fixCppIncludeInsertions(Code, std::move(Replaces), Style);
   return processReplacements(Cleanup, Code, NewReplaces, Style);
 }
 
@@ -3252,7 +3252,7 @@ reformat(const FormatStyle &Style, StringRef Code,
     if (!Replaces.add(tooling::Replacement(FileName, 0, 4, ""))) {
       // apply the reformatting changes and the removal of "x = ".
       if (applyAllReplacements(Code, Replaces))
-        return {Replaces, 0};
+        return {std::move(Replaces), 0};
     }
     return {tooling::Replacements(), 0};
   }
@@ -3347,7 +3347,7 @@ reformat(const FormatStyle &Style, StringRef Code,
     }
   }
 
-  return {Fixes, Penalty};
+  return {std::move(Fixes), Penalty};
 }
 } // namespace internal
 

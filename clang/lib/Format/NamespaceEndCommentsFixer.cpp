@@ -298,7 +298,7 @@ std::pair<tooling::Replacements, unsigned> NamespaceEndCommentsFixer::analyze(
   // lead to comments being placed on the closing brace which isn't
   // the matching brace of the namespace. (occurs during incomplete editing).
   if (Braces != 0)
-    return {Fixes, 0};
+    return {std::move(Fixes), 0};
 
   std::string AllNamespaceNames;
   size_t StartLineIndex = SIZE_MAX;
@@ -368,7 +368,7 @@ std::pair<tooling::Replacements, unsigned> NamespaceEndCommentsFixer::analyze(
     }
     StartLineIndex = SIZE_MAX;
   }
-  return {Fixes, 0};
+  return {std::move(Fixes), 0};
 }
 
 } // namespace format

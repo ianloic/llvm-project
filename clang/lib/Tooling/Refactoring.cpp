@@ -67,14 +67,15 @@ int RefactoringTool::saveRewrittenFiles(Rewriter &Rewrite) {
 }
 
 bool formatAndApplyAllReplacements(
-    const std::map<std::string, Replacements> &FileToReplaces,
-    Rewriter &Rewrite, StringRef Style) {
+    std::map<std::string, Replacements> &&FileToReplaces, Rewriter &Rewrite,
+    StringRef Style) {
   SourceManager &SM = Rewrite.getSourceMgr();
   FileManager &Files = SM.getFileManager();
 
   bool Result = true;
-  for (const auto &FileAndReplaces : groupReplacementsByFile(
-           Rewrite.getSourceMgr().getFileManager(), FileToReplaces)) {
+  for (const auto &FileAndReplaces :
+       groupReplacementsByFile(Rewrite.getSourceMgr().getFileManager(),
+                               std::move(FileToReplaces))) {
     const std::string &FilePath = FileAndReplaces.first;
     auto &CurReplaces = FileAndReplaces.second;
 

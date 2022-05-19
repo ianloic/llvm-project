@@ -207,7 +207,7 @@ std::pair<tooling::Replacements, unsigned> UsingDeclarationsSorter::analyze(
     UsingDeclarations.push_back(UsingDeclaration(Line, Label));
   }
   endUsingDeclarationBlock(&UsingDeclarations, SourceMgr, &Fixes);
-  return {Fixes, 0};
+  return {std::move(Fixes), 0};
 }
 
 } // namespace format

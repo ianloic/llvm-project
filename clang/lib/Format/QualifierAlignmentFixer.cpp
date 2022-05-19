@@ -100,7 +100,7 @@ std::pair<tooling::Replacements, unsigned> QualifierAlignmentFixer::analyze(
       }
     }
   }
-  return {NonNoOpFixes, 0};
+  return {std::move(NonNoOpFixes), 0};
 }
 
 static void replaceToken(const SourceManager &SourceMgr,
@@ -459,7 +459,7 @@ LeftRightQualifierAlignmentFixer::analyze(
       }
     }
   }
-  return {Fixes, 0};
+  return {std::move(Fixes), 0};
 }
 
 void QualifierAlignmentFixer::PrepareLeftRightOrdering(

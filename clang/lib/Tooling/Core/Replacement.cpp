@@ -242,7 +242,7 @@ Replacements::mergeIfOrderIndependent(const Replacement &R) const {
                                             R, *Replaces.begin());
 }
 
-llvm::Error Replacements::add(const Replacement &R) {
+llvm::Error Replacements::add(Replacement R) {
   // Check the file path.
   if (!Replaces.empty() && R.getFilePath() != Replaces.begin()->getFilePath())
     return llvm::make_error<ReplacementError>(
@@ -608,12 +608,12 @@ llvm::Expected<std::string> applyAllReplacements(StringRef Code,
   return Result;
 }
 
-std::map<std::string, Replacements> groupReplacementsByFile(
-    FileManager &FileMgr,
-    const std::map<std::string, Replacements> &FileToReplaces) {
+std::map<std::string, Replacements>
+groupReplacementsByFile(FileManager &FileMgr,
+                        std::map<std::string, Replacements> &&FileToReplaces) {
   std::map<std::string, Replacements> Result;
   llvm::SmallPtrSet<const FileEntry *, 16> ProcessedFileEntries;
-  for (const auto &Entry : FileToReplaces) {
+  for (auto &Entry : FileToReplaces) {
     auto FE = FileMgr.getFile(Entry.first);
     if (!FE)
       llvm::errs() << "File path " << Entry.first << " is invalid.\n";

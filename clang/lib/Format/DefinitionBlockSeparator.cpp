@@ -26,7 +26,7 @@ std::pair<tooling::Replacements, unsigned> DefinitionBlockSeparator::analyze(
   AffectedRangeMgr.computeAffectedLines(AnnotatedLines);
   tooling::Replacements Result;
   separateBlocks(AnnotatedLines, Result, Tokens);
-  return {Result, 0};
+  return {std::move(Result), 0};
 }
 
 void DefinitionBlockSeparator::separateBlocks(
