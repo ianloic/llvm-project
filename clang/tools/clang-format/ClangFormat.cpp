@@ -25,6 +25,7 @@
 #include "llvm/Support/InitLLVM.h"
 #include "llvm/Support/Process.h"
 #include <fstream>
+#include <unistd.h>
 
 using namespace llvm;
 using clang::tooling::Replacements;
@@ -34,6 +35,12 @@ static cl::opt<bool> Help("h", cl::desc("Alias for -help"), cl::Hidden);
 // Mark all our options with this category, everything else (except for -version
 // and -help) will be hidden.
 static cl::OptionCategory ClangFormatCategory("Clang-format options");
+
+static cl::opt<unsigned> Sleep("sleep", cl::desc("Sleep at startup"),
+                               cl::cat(ClangFormatCategory));
+
+static cl::opt<bool> Stop("stop", cl::desc("Stop before exiting"),
+                          cl::cat(ClangFormatCategory));
 
 static cl::list<unsigned>
     Offsets("offset",
@@ -598,6 +605,11 @@ int main(int argc, const char **argv) {
   if (DumpConfig)
     return dumpConfig();
 
+  if (Sleep) {
+    fprintf(stderr, "Sleeping for %us\n", (unsigned)Sleep);
+    sleep((unsigned)Sleep);
+  }
+
   if (!Files.empty()) {
     std::ifstream ExternalFileOfFiles{std::string(Files)};
     std::string Line;
@@ -628,6 +640,12 @@ int main(int argc, const char **argv) {
              << FileName << "\n";
     }
     Error |= clang::format::format(FileName);
+  }
+  if (Stop) {
+    fprintf(stderr, "Done but not exiting.\n");
+    while (true) {
+      sleep(120);
+    }
   }
   return Error ? 1 : 0;
 }
