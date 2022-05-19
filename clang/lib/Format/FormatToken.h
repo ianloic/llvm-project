@@ -525,26 +525,28 @@ public:
   /// cases in which we treat parents as block-openers for now.
   bool MacroParent = false;
 
-  bool is(tok::TokenKind Kind) const { return Tok.is(Kind); }
-  bool is(TokenType TT) const { return getType() == TT; }
-  bool is(const IdentifierInfo *II) const {
+  inline bool is(tok::TokenKind Kind) const { return Tok.is(Kind); }
+  inline bool is(TokenType TT) const { return getType() == TT; }
+  inline bool is(const IdentifierInfo *II) const {
     return II && II == Tok.getIdentifierInfo();
   }
-  bool is(tok::PPKeywordKind Kind) const {
+  inline bool is(tok::PPKeywordKind Kind) const {
     return Tok.getIdentifierInfo() &&
            Tok.getIdentifierInfo()->getPPKeywordID() == Kind;
   }
-  bool is(BraceBlockKind BBK) const { return getBlockKind() == BBK; }
-  bool is(ParameterPackingKind PPK) const { return getPackingKind() == PPK; }
+  inline bool is(BraceBlockKind BBK) const { return getBlockKind() == BBK; }
+  inline bool is(ParameterPackingKind PPK) const {
+    return getPackingKind() == PPK;
+  }
 
-  template <typename A, typename B> bool isOneOf(A K1, B K2) const {
+  template <typename A, typename B> inline bool isOneOf(A K1, B K2) const {
     return is(K1) || is(K2);
   }
   template <typename A, typename B, typename... Ts>
-  bool isOneOf(A K1, B K2, Ts... Ks) const {
+  inline bool isOneOf(A K1, B K2, Ts... Ks) const {
     return is(K1) || isOneOf(K2, Ks...);
   }
-  template <typename T> bool isNot(T Kind) const { return !is(Kind); }
+  template <typename T> inline bool isNot(T Kind) const { return !is(Kind); }
 
   bool isIf(bool AllowConstexprMacro = true) const {
     return is(tok::kw_if) || endsSequence(tok::kw_constexpr, tok::kw_if) ||
