@@ -25,7 +25,7 @@ namespace format {
 class ContinuationIndenter;
 class WhitespaceManager;
 
-class UnwrappedLineFormatter {
+class UnwrappedLineFormatter final {
 public:
   UnwrappedLineFormatter(ContinuationIndenter *Indenter,
                          WhitespaceManager *Whitespaces,

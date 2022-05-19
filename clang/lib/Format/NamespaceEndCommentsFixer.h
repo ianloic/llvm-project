@@ -30,7 +30,7 @@ const FormatToken *
 getNamespaceToken(const AnnotatedLine *Line,
                   const SmallVectorImpl<AnnotatedLine *> &AnnotatedLines);
 
-class NamespaceEndCommentsFixer : public TokenAnalyzer {
+class NamespaceEndCommentsFixer final : public TokenAnalyzer {
 public:
   NamespaceEndCommentsFixer(const Environment &Env, const FormatStyle &Style);
 

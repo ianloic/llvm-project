@@ -21,7 +21,7 @@
 
 namespace clang {
 namespace format {
-class DefinitionBlockSeparator : public TokenAnalyzer {
+class DefinitionBlockSeparator final : public TokenAnalyzer {
 public:
   DefinitionBlockSeparator(const Environment &Env, const FormatStyle &Style)
       : TokenAnalyzer(Env, Style) {}

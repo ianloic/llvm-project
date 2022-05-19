@@ -47,7 +47,7 @@ struct RawStringFormatStyleManager {
   getEnclosingFunctionStyle(StringRef EnclosingFunction) const;
 };
 
-class ContinuationIndenter {
+class ContinuationIndenter final {
 public:
   /// Constructs a \c ContinuationIndenter to format \p Line starting in
   /// column \p FirstIndent.

@@ -20,7 +20,7 @@
 namespace clang {
 namespace format {
 
-class UsingDeclarationsSorter : public TokenAnalyzer {
+class UsingDeclarationsSorter final : public TokenAnalyzer {
 public:
   UsingDeclarationsSorter(const Environment &Env, const FormatStyle &Style);
 

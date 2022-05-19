@@ -1030,7 +1030,7 @@ private:
 };
 
 /// Formatter that keeps the existing line breaks.
-class NoColumnLimitLineFormatter : public LineFormatter {
+class NoColumnLimitLineFormatter final : public LineFormatter {
 public:
   NoColumnLimitLineFormatter(ContinuationIndenter *Indenter,
                              WhitespaceManager *Whitespaces,
@@ -1058,7 +1058,7 @@ public:
 };
 
 /// Formatter that puts all tokens into a single line without breaks.
-class NoLineBreakFormatter : public LineFormatter {
+class NoLineBreakFormatter final : public LineFormatter {
 public:
   NoLineBreakFormatter(ContinuationIndenter *Indenter,
                        WhitespaceManager *Whitespaces, const FormatStyle &Style,
@@ -1081,7 +1081,7 @@ public:
 };
 
 /// Finds the best way to break lines.
-class OptimizingLineFormatter : public LineFormatter {
+class OptimizingLineFormatter final : public LineFormatter {
 public:
   OptimizingLineFormatter(ContinuationIndenter *Indenter,
                           WhitespaceManager *Whitespaces,

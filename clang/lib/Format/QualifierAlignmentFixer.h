@@ -25,7 +25,7 @@ typedef std::function<std::pair<tooling::Replacements, unsigned>(
     const Environment &)>
     AnalyzerPass;
 
-class QualifierAlignmentFixer : public TokenAnalyzer {
+class QualifierAlignmentFixer final : public TokenAnalyzer {
   // Left to Right ordering requires multiple passes
   SmallVector<AnalyzerPass, 8> Passes;
   StringRef &Code;
@@ -52,7 +52,7 @@ public:
                                        std::vector<tok::TokenKind> &Qualifiers);
 };
 
-class LeftRightQualifierAlignmentFixer : public TokenAnalyzer {
+class LeftRightQualifierAlignmentFixer final : public TokenAnalyzer {
   std::string Qualifier;
   bool RightAlign;
   SmallVector<tok::TokenKind, 8> QualifierTokens;
