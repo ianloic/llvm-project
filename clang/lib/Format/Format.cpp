@@ -3355,6 +3355,9 @@ tooling::Replacements reformat(const FormatStyle &Style, StringRef Code,
                                ArrayRef<tooling::Range> Ranges,
                                StringRef FileName,
                                FormattingAttemptStatus *Status) {
+  fprintf(stderr, "sizeof(FormatToken)=%zu\n",
+          sizeof(clang::format::FormatToken));
+
   return internal::reformat(Style, Code, Ranges,
                             /*FirstStartColumn=*/0,
                             /*NextStartColumn=*/0,
