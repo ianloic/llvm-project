@@ -2091,9 +2091,9 @@ private:
           continue;
         // Don't treat space in `void foo() &&` as evidence.
         if (const auto *Prev = Tok->getPreviousNonComment()) {
-          if (Prev->is(tok::r_paren) && Prev->MatchingParen) {
+          if (Prev->is(tok::r_paren) && Prev->Paren->MatchingParen) {
             if (const auto *Func =
-                    Prev->MatchingParen->getPreviousNonComment()) {
+                    Prev->Paren->MatchingParen->getPreviousNonComment()) {
               if (Func->isOneOf(TT_FunctionDeclarationName, TT_StartOfName,
                                 TT_OverloadedOperator)) {
                 continue;
@@ -2187,7 +2187,7 @@ private:
            FormatTok = FormatTok->Next) {
         if (FormatTok->NewlinesBefore == 0)
           continue;
-        FormatToken *Matching = FormatTok->MatchingParen;
+        FormatToken *Matching = FormatTok->Paren->MatchingParen;
         if (!Matching || !FormatTok->getPreviousNonComment())
           continue;
         if (!(FormatTok->is(tok::r_square) &&

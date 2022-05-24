@@ -220,7 +220,7 @@ const FormatToken *LeftRightQualifierAlignmentFixer::analyzeRight(
       [&](const FormatToken *Tok,
           const FormatToken *StartTemplate) -> const FormatToken * {
     // Read from the TemplateOpener to TemplateCloser.
-    FormatToken *EndTemplate = StartTemplate->MatchingParen;
+    FormatToken *EndTemplate = StartTemplate->MatchingParen();
     if (EndTemplate) {
       // Move to the end of any template class members e.g.
       // `Foo<int>::iterator`.
@@ -282,7 +282,7 @@ const FormatToken *LeftRightQualifierAlignmentFixer::analyzeRight(
     while (Next && Next->isOneOf(tok::identifier, tok::coloncolon))
       Next = Next->Next;
     if (Next && Next->is(TT_TemplateOpener)) {
-      Next = Next->MatchingParen;
+      Next = Next->MatchingParen();
       // Move to the end of any template class members e.g.
       // `Foo<int>::iterator`.
       if (Next && Next->startsSequence(TT_TemplateCloser, tok::coloncolon,
@@ -369,13 +369,13 @@ const FormatToken *LeftRightQualifierAlignmentFixer::analyzeLeft(
       if (Next->is(tok::comment) && Next->getNextNonComment())
         Next = Next->getNextNonComment();
       assert(Next->MatchingParen && "Missing template closer");
-      Next = Next->MatchingParen;
+      Next = Next->MatchingParen();
 
       // If the template closer is closing the requires clause,
       // then stop and go back to the TemplateOpener and do whatever is
       // inside the <>.
       if (Next->ClosesRequiresClause)
-        return Next->MatchingParen;
+        return Next->MatchingParen();
       Next = Next->Next;
 
       // Move to the end of any template class members e.g.

@@ -944,8 +944,8 @@ FormatToken *UnwrappedLineParser::parseBlock(
     return mightFitOnOneLine((*CurrentLines)[Index], Tok);
   };
   if (RemoveBraces()) {
-    Tok->MatchingParen = FormatTok;
-    FormatTok->MatchingParen = Tok;
+    Tok->MatchingParen() = FormatTok;
+    FormatTok->MatchingParen() = Tok;
   }
 
   size_t PPEndHash = computePPHash();
@@ -2641,7 +2641,7 @@ static void markOptionalBraces(FormatToken *LeftBrace) {
 
   assert(LeftBrace->is(tok::l_brace));
 
-  FormatToken *RightBrace = LeftBrace->MatchingParen;
+  FormatToken *RightBrace = LeftBrace->MatchingParen();
   if (!RightBrace) {
     assert(!LeftBrace->Optional);
     return;
@@ -2713,7 +2713,7 @@ FormatToken *UnwrappedLineParser::parseIfThenElse(IfStmtKind *IfKind,
   if (Style.RemoveBracesLLVM) {
     assert(!NestedTooDeep.empty());
     KeepIfBraces = KeepIfBraces ||
-                   (IfLeftBrace && !IfLeftBrace->MatchingParen) ||
+                   (IfLeftBrace && !IfLeftBrace->MatchingParen()) ||
                    NestedTooDeep.back() || IfBlockKind == IfStmtKind::IfOnly ||
                    IfBlockKind == IfStmtKind::IfElseIf;
   }
@@ -2780,7 +2780,7 @@ FormatToken *UnwrappedLineParser::parseIfThenElse(IfStmtKind *IfKind,
 
   assert(!NestedTooDeep.empty());
   KeepElseBraces = KeepElseBraces ||
-                   (ElseLeftBrace && !ElseLeftBrace->MatchingParen) ||
+                   (ElseLeftBrace && !ElseLeftBrace->MatchingParen()) ||
                    NestedTooDeep.back();
 
   NestedTooDeep.pop_back();
@@ -2789,13 +2789,13 @@ FormatToken *UnwrappedLineParser::parseIfThenElse(IfStmtKind *IfKind,
     markOptionalBraces(IfLeftBrace);
     markOptionalBraces(ElseLeftBrace);
   } else if (IfLeftBrace) {
-    FormatToken *IfRightBrace = IfLeftBrace->MatchingParen;
+    FormatToken *IfRightBrace = IfLeftBrace->MatchingParen();
     if (IfRightBrace) {
       assert(IfRightBrace->MatchingParen == IfLeftBrace);
       assert(!IfLeftBrace->Optional);
       assert(!IfRightBrace->Optional);
-      IfLeftBrace->MatchingParen = nullptr;
-      IfRightBrace->MatchingParen = nullptr;
+      IfLeftBrace->MatchingParen() = nullptr;
+      IfRightBrace->MatchingParen() = nullptr;
     }
   }
 

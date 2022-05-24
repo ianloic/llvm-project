@@ -235,6 +235,246 @@ struct MacroExpansion {
   unsigned EndOfExpansion = 0;
 };
 
+template <typename T> class LazyOutOfLine final {
+  static_assert(std::is_default_constructible<T>::value,
+                "Must be default constructible.");
+  static_assert(std::is_copy_constructible<T>::value,
+                "Must be copy constructible.");
+
+public:
+  LazyOutOfLine() = default;
+  LazyOutOfLine(const LazyOutOfLine &other) {
+    if (other) {
+      ptr_ = new T(*other.get());
+    }
+  }
+  LazyOutOfLine &operator=(const LazyOutOfLine &other) {
+    if (other.ptr_) {
+      ptr_ = new T(*other.ptr_);
+    } else {
+      ptr_ = nullptr;
+    }
+    return *this;
+  }
+
+  ~LazyOutOfLine() {
+    if (ptr_) {
+      delete ptr_;
+      ptr_ = nullptr;
+    }
+  }
+  T *operator->() {
+    EnsureConstructed();
+    return ptr_;
+  }
+  T &operator*() {
+    EnsureConstructed();
+    return *ptr_;
+  }
+  const T *operator->() const { return GetPointer(); }
+  const T &operator*() const { return *GetPointer(); }
+
+  T *get() { return ptr_; }
+
+private:
+  void EnsureConstructed() {
+    if (ptr_ == nullptr) {
+      ptr_ = new T();
+    }
+  }
+  T *GetPointer() { return ptr_; }
+  const T *GetPointer() const {
+    if (ptr_ == nullptr) {
+      static const T Default{};
+      return &Default;
+    }
+    return ptr_;
+  }
+  T *ptr_ = nullptr;
+};
+
+template <typename T> class OptionalOutOfLine {
+  static_assert(std::is_copy_constructible<T>::value,
+                "Must be copy constructible.");
+
+public:
+  OptionalOutOfLine() = default;
+  OptionalOutOfLine(const OptionalOutOfLine &other) {
+    if (other) {
+      ptr_ = new T(*other.ptr_);
+    }
+  }
+  OptionalOutOfLine &operator=(const OptionalOutOfLine &other) {
+    if (ptr_) {
+      delete ptr_;
+    }
+    if (other) {
+      ptr_ = new T(*other.ptr_);
+    } else {
+      ptr_ = nullptr;
+    }
+    return *this;
+  }
+  ~OptionalOutOfLine() {
+    if (ptr_) {
+      delete ptr_;
+    }
+  }
+
+  operator bool() const { return ptr_ != nullptr; }
+  OptionalOutOfLine &operator=(T &&value) {
+    if (ptr_) {
+      *ptr_ = std::move(value);
+    } else {
+      ptr_ = new T(std::move(value));
+    }
+    return *this;
+  }
+  T *operator->() { return ptr_; }
+  const T *operator->() const { return ptr_; }
+
+private:
+  T *ptr_ = nullptr;
+};
+
+template <typename T,
+          unsigned N =
+              llvm::CalculateSmallVectorDefaultInlinedElements<T>::value>
+class OutOfLineVector {
+  using Vector = SmallVector<T, N>;
+  using reference = typename Vector::reference;
+  using const_reference = typename Vector::const_reference;
+  using size_type = typename Vector::size_type;
+  using iterator = typename Vector::iterator;
+  using const_iterator = typename Vector::const_iterator;
+
+public:
+  OutOfLineVector() = default;
+
+  operator const Vector &() const {
+    EnsureConstructed();
+    return *ptr_;
+  }
+
+  bool empty() const { return !ptr_ || ptr_->empty(); }
+  size_t size() const {
+    if (ptr_) {
+      return ptr_->size();
+    }
+    return 0;
+  }
+
+  void clear() {
+    if (ptr_) {
+      delete ptr_;
+      ptr_ = nullptr;
+    }
+  }
+
+  reference operator[](size_type idx) {
+    assert(ptr_ != nullptr);
+    return ptr_->operator[](idx);
+  }
+
+  const_reference operator[](size_type idx) const {
+    assert(ptr_ != nullptr);
+    return ptr_->operator[](idx);
+  }
+
+  reference front() {
+    assert(ptr_);
+    return ptr_->front();
+  }
+
+  const_reference front() const {
+    assert(ptr_);
+    return ptr_->front();
+  }
+
+  reference back() {
+    assert(ptr_);
+    return ptr_->back();
+  }
+
+  const_reference back() const {
+    assert(ptr_);
+    return ptr_->back();
+  }
+
+  void push_back(const T &Elt) {
+    EnsureConstructed();
+    ptr_->push_back(Elt);
+  }
+
+  void push_back(T &&Elt) {
+    EnsureConstructed();
+    ptr_->push_back(std::move(Elt));
+  }
+
+  iterator begin() {
+    if (ptr_) {
+      return ptr_->begin();
+    }
+    return (iterator) nullptr;
+  }
+
+  iterator end() {
+    if (ptr_) {
+      return ptr_->end();
+    }
+    return (iterator) nullptr;
+  }
+
+  const_iterator begin() const {
+    if (ptr_) {
+      return ptr_->begin();
+    }
+    return (const_iterator) nullptr;
+  }
+
+  const_iterator end() const {
+    if (ptr_) {
+      return ptr_->end();
+    }
+    return (const_iterator) nullptr;
+  }
+
+private:
+  void EnsureConstructed() const {
+    if (ptr_ == nullptr) {
+      ptr_ = new Vector();
+    }
+  }
+
+  mutable Vector *ptr_ = nullptr;
+};
+
+struct ParenDetails {
+  /// Number of parameters, if this is "(", "[" or "<".
+  uint8_t ParameterCount = 0;
+
+  /// Number of parameters that are nested blocks,
+  /// if this is "(", "[" or "<".
+  uint8_t BlockParameterCount = 0;
+
+  /// If this is a bracket ("<", "(", "[" or "{"), contains the kind of
+  /// the surrounding bracket.
+  tok::TokenKind ParentBracket = tok::unknown;
+
+  /// If this is a bracket, this points to the matching one.
+  FormatToken *MatchingParen = nullptr;
+};
+
+struct OperatorDetails {
+  /// If this is an operator (or "."/"->") in a sequence of operators
+  /// with the same precedence, contains the 0-based operator index.
+  uint16_t OperatorIndex = 0;
+
+  /// If this is an operator (or "."/"->") in a sequence of operators
+  /// with the same precedence, points to the next operator.
+  FormatToken *NextOperator = nullptr;
+};
+
 class TokenRole;
 class AnnotatedLine;
 
@@ -410,15 +650,18 @@ public:
   uint16_t SpacesRequiredBefore = 0;
 
   /// Number of parameters, if this is "(", "[" or "<".
-  uint8_t ParameterCount = 0;
+  uint8_t &ParameterCount() { return Paren->ParameterCount; }
+  uint8_t ParameterCount() const { return Paren->ParameterCount; }
 
   /// Number of parameters that are nested blocks,
   /// if this is "(", "[" or "<".
-  uint8_t BlockParameterCount = 0;
+  uint8_t &BlockParameterCount() { return Paren->BlockParameterCount; }
+  uint8_t BlockParameterCount() const { return Paren->BlockParameterCount; }
 
   /// If this is a bracket ("<", "(", "[" or "{"), contains the kind of
   /// the surrounding bracket.
-  tok::TokenKind ParentBracket = tok::unknown;
+  tok::TokenKind &ParentBracket() { return Paren->ParentBracket; }
+  tok::TokenKind ParentBracket() const { return Paren->ParentBracket; }
 
   /// The total length of the unwrapped line up to and including this
   /// token.
@@ -457,32 +700,35 @@ public:
   /// If this is the first ObjC selector name in an ObjC method
   /// definition or call, this contains the number of parts that the whole
   /// selector consist of.
-  uint16_t ObjCSelectorNameParts = 0;
+  uint8_t ObjCSelectorNameParts = 0;
 
   /// The 0-based index of the parameter/argument. For ObjC it is set
   /// for the selector name token.
   /// For now calculated only for ObjC.
-  uint16_t ParameterIndex = 0;
+  uint8_t ParameterIndex = 0;
 
   /// Stores the number of required fake parentheses and the
   /// corresponding operator precedence.
   ///
   /// If multiple fake parentheses start at a token, this vector stores them in
   /// reverse order, i.e. inner fake parenthesis first.
-  SmallVector<prec::Level, 4> FakeLParens;
+  OutOfLineVector<prec::Level, 1> FakeLParens;
   /// Insert this many fake ) after this token for correct indentation.
   uint16_t FakeRParens = 0;
 
   /// If this is an operator (or "."/"->") in a sequence of operators
   /// with the same precedence, contains the 0-based operator index.
-  uint16_t OperatorIndex = 0;
+  uint16_t &OperatorIndex() { return Operator->OperatorIndex; }
+  uint16_t OperatorIndex() const { return Operator->OperatorIndex; }
 
   /// If this is an operator (or "."/"->") in a sequence of operators
   /// with the same precedence, points to the next operator.
-  FormatToken *NextOperator = nullptr;
+  FormatToken *&NextOperator() { return Operator->NextOperator; }
+  FormatToken *NextOperator() const { return Operator->NextOperator; }
 
   /// If this is a bracket, this points to the matching one.
-  FormatToken *MatchingParen = nullptr;
+  FormatToken *&MatchingParen() { return Paren->MatchingParen; }
+  FormatToken *MatchingParen() const { return Paren->MatchingParen; }
 
   /// The previous token in the unwrapped line.
   FormatToken *Previous = nullptr;
@@ -491,16 +737,16 @@ public:
   FormatToken *Next = nullptr;
 
   /// The first token in set of column elements.
-  bool StartsColumn = false;
+  bool StartsColumn : 1;
 
   /// This notes the start of the line of an array initializer.
-  bool ArrayInitializerLineStart = false;
+  bool ArrayInitializerLineStart : 1;
 
   /// This starts an array initializer.
-  bool IsArrayInitializer = false;
+  bool IsArrayInitializer : 1;
 
   /// Is optional and can be removed.
-  bool Optional = false;
+  bool Optional : 1;
 
   /// Number of optional braces to be inserted after this token:
   ///   -1: a single left brace
@@ -510,11 +756,17 @@ public:
 
   /// If this token starts a block, this contains all the unwrapped lines
   /// in it.
-  SmallVector<AnnotatedLine *, 1> Children;
+  OutOfLineVector<AnnotatedLine *, 1> Children;
 
   // Contains all attributes related to how this token takes part
   // in a configured macro expansion.
-  llvm::Optional<MacroExpansion> MacroCtx;
+  OptionalOutOfLine<MacroExpansion> MacroCtx;
+
+  // Contains paren-related attributes.
+  LazyOutOfLine<ParenDetails> Paren;
+
+  // Contains operator-related attributes;
+  LazyOutOfLine<OperatorDetails> Operator;
 
   /// When macro expansion introduces nodes with children, those are marked as
   /// \c MacroParent.
@@ -766,7 +1018,8 @@ public:
   bool closesBlockOrBlockTypeList(const FormatStyle &Style) const {
     if (is(TT_TemplateString) && closesScope())
       return true;
-    return MatchingParen && MatchingParen->opensBlockOrBlockTypeList(Style);
+    return Paren->MatchingParen &&
+           Paren->MatchingParen->opensBlockOrBlockTypeList(Style);
   }
 
   /// Return the actual namespace token, if this token starts a namespace

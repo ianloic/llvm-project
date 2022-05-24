@@ -371,16 +371,16 @@ AlignTokenSequence(const FormatStyle &Style, unsigned Start, unsigned End,
             Changes[ScopeStart - 2].Tok->is(tok::identifier) &&
             Changes[ScopeStart - 1].Tok->is(tok::l_paren) &&
             Changes[ScopeStart].Tok->isNot(TT_LambdaLSquare)) {
-          if (Changes[i].Tok->MatchingParen &&
-              Changes[i].Tok->MatchingParen->is(TT_LambdaLBrace)) {
-            return false;
-          }
-          if (Changes[ScopeStart].NewlinesBefore > 0)
-            return false;
-          if (Changes[i].Tok->is(tok::l_brace) &&
-              Changes[i].Tok->is(BK_BracedInit)) {
-            return true;
-          }
+            if (Changes[i].Tok->MatchingParen() &&
+                Changes[i].Tok->MatchingParen()->is(TT_LambdaLBrace)) {
+              return false;
+            }
+            if (Changes[ScopeStart].NewlinesBefore > 0)
+              return false;
+            if (Changes[i].Tok->is(tok::l_brace) &&
+                Changes[i].Tok->is(BK_BracedInit)) {
+              return true;
+            }
           return Style.BinPackArguments;
         }
 
@@ -715,8 +715,8 @@ void WhitespaceManager::alignConsecutiveMacros() {
 
     // If token is a ")", skip over the parameter list, to the
     // token that precedes the "("
-    if (Current->is(tok::r_paren) && Current->MatchingParen) {
-      Current = Current->MatchingParen->Previous;
+    if (Current->is(tok::r_paren) && Current->MatchingParen()) {
+      Current = Current->MatchingParen()->Previous;
       SpacesRequiredBefore = 0;
     }
 
@@ -1070,7 +1070,7 @@ void WhitespaceManager::alignArrayInitializers() {
       bool FoundComplete = false;
       for (unsigned InsideIndex = ChangeIndex + 1; InsideIndex < ChangeEnd;
            ++InsideIndex) {
-        if (Changes[InsideIndex].Tok == C.Tok->MatchingParen) {
+        if (Changes[InsideIndex].Tok == C.Tok->MatchingParen()) {
           alignArrayInitializers(ChangeIndex, InsideIndex + 1);
           ChangeIndex = InsideIndex + 1;
           FoundComplete = true;
@@ -1239,7 +1239,7 @@ WhitespaceManager::CellDescriptions WhitespaceManager::getCells(unsigned Start,
     if (Depth == 2) {
       if (C.Tok->is(tok::l_brace)) {
         Cell = 0;
-        MatchingParen = C.Tok->MatchingParen;
+        MatchingParen = C.Tok->MatchingParen();
         if (InitialSpaces == 0) {
           InitialSpaces = C.Spaces + C.TokenLength;
           InitialTokenLength = C.TokenLength;
