@@ -222,50 +222,50 @@ struct ParenState {
 
   /// The position to which a specific parenthesis level needs to be
   /// indented.
-  unsigned Indent;
+  uint16_t Indent;
 
   /// The position of the last space on each level.
   ///
   /// Used e.g. to break like:
   /// functionCall(Parameter, otherCall(
   ///                             OtherParameter));
-  unsigned LastSpace;
+  uint16_t LastSpace;
 
   /// If a block relative to this parenthesis level gets wrapped, indent
   /// it this much.
-  unsigned NestedBlockIndent;
+  uint16_t NestedBlockIndent;
 
   /// The position the first "<<" operator encountered on each level.
   ///
   /// Used to align "<<" operators. 0 if no such operator has been encountered
   /// on a level.
-  unsigned FirstLessLess = 0;
+  uint16_t FirstLessLess = 0;
 
   /// The column of a \c ? in a conditional expression;
-  unsigned QuestionColumn = 0;
+  uint16_t QuestionColumn = 0;
 
   /// The position of the colon in an ObjC method declaration/call.
-  unsigned ColonPos = 0;
+  uint16_t ColonPos = 0;
 
   /// The start of the most recent function in a builder-type call.
-  unsigned StartOfFunctionCall = 0;
+  uint16_t StartOfFunctionCall = 0;
 
   /// Contains the start of array subscript expressions, so that they
   /// can be aligned.
-  unsigned StartOfArraySubscripts = 0;
+  uint16_t StartOfArraySubscripts = 0;
 
   /// If a nested name specifier was broken over multiple lines, this
   /// contains the start column of the second line. Otherwise 0.
-  unsigned NestedNameSpecifierContinuation = 0;
+  uint16_t NestedNameSpecifierContinuation = 0;
 
   /// If a call expression was broken over multiple lines, this
   /// contains the start column of the second line. Otherwise 0.
-  unsigned CallContinuation = 0;
+  uint16_t CallContinuation = 0;
 
   /// The column of the first variable name in a variable declaration.
   ///
   /// Used to align further variables if necessary.
-  unsigned VariablePos = 0;
+  uint16_t VariablePos = 0;
 
   /// Whether this block's indentation is used for alignment.
   bool IsAligned : 1;
@@ -413,24 +413,26 @@ struct ParenState {
 ///
 /// As the indenting tries different combinations this is copied by value.
 struct LineState {
-  /// The number of used columns in the current line.
-  unsigned Column;
-
   /// The token that needs to be next formatted.
   FormatToken *NextToken;
 
-  /// \c true if \p NextToken should not continue this line.
-  bool NoContinuation;
+  /// The number of used columns in the current line.
+  uint16_t Column;
 
   /// The \c NestingLevel at the start of this line.
-  unsigned StartOfLineLevel;
+  uint16_t StartOfLineLevel;
 
   /// The lowest \c NestingLevel on the current line.
-  unsigned LowestLevelOnLine;
+  uint16_t LowestLevelOnLine;
 
   /// The start column of the string literal, if we're in a string
   /// literal sequence, 0 otherwise.
-  unsigned StartOfStringLiteral;
+  uint16_t StartOfStringLiteral;
+
+  /// The line that is being formatted.
+  ///
+  /// Does not need to be considered for memoization because it doesn't change.
+  const AnnotatedLine *Line;
 
   /// A stack keeping track of properties applying to parenthesis
   /// levels.
@@ -451,13 +453,11 @@ struct LineState {
   /// FIXME: Come up with a better algorithm instead.
   bool IgnoreStackForComparison;
 
-  /// The indent of the first token.
-  unsigned FirstIndent;
+  /// \c true if \p NextToken should not continue this line.
+  bool NoContinuation;
 
-  /// The line that is being formatted.
-  ///
-  /// Does not need to be considered for memoization because it doesn't change.
-  const AnnotatedLine *Line;
+  /// The indent of the first token.
+  uint16_t FirstIndent;
 
   /// Comparison operator to be able to used \c LineState in \c map.
   bool operator<(const LineState &Other) const {

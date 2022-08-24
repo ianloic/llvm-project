@@ -343,7 +343,7 @@ AlignTokenSequence(const FormatStyle &Style, unsigned Start, unsigned End,
       if (Changes[i].NewlinesBefore == 0) {
         Changes[i].Spaces =
             std::max(Changes[i].Spaces,
-                     static_cast<int>(Changes[i].Tok->SpacesRequiredBefore));
+                     static_cast<int16_t>(Changes[i].Tok->SpacesRequiredBefore));
       }
     }
 
@@ -1028,13 +1028,14 @@ void WhitespaceManager::alignEscapedNewlines() {
     return;
 
   bool AlignLeft = Style.AlignEscapedNewlines == FormatStyle::ENAS_Left;
-  unsigned MaxEndOfLine = AlignLeft ? 0 : Style.ColumnLimit;
+  uint16_t MaxEndOfLine = AlignLeft ? 0 : Style.ColumnLimit;
   unsigned StartOfMacro = 0;
   for (unsigned i = 1, e = Changes.size(); i < e; ++i) {
     Change &C = Changes[i];
     if (C.NewlinesBefore > 0) {
       if (C.ContinuesPPDirective) {
-        MaxEndOfLine = std::max(C.PreviousEndOfTokenColumn + 2, MaxEndOfLine);
+        MaxEndOfLine =
+            std::max((uint16_t)(C.PreviousEndOfTokenColumn + 2), MaxEndOfLine);
       } else {
         alignEscapedNewlines(StartOfMacro + 1, i, MaxEndOfLine);
         MaxEndOfLine = AlignLeft ? 0 : Style.ColumnLimit;
@@ -1317,7 +1318,7 @@ WhitespaceManager::CellDescriptions WhitespaceManager::getCells(unsigned Start,
         if ((j - 1) > Start && Changes[j].Tok->is(tok::comma) &&
             Changes[j - 1].NewlinesBefore > 0) {
           --j;
-          auto LineLimit = Changes[j].Spaces + Changes[j].TokenLength;
+          uint16_t LineLimit = Changes[j].Spaces + Changes[j].TokenLength;
           if (LineLimit < Style.ColumnLimit) {
             Changes[i].NewlinesBefore = 0;
             Changes[i].Spaces = 1;
@@ -1396,10 +1397,11 @@ void WhitespaceManager::generateChanges() {
       }
       // FIXME: This assert should hold if we computed the column correctly.
       // assert((int)C.StartOfTokenColumn >= C.Spaces);
-      appendIndentText(
-          ReplacementText, C.Tok->IndentLevel, std::max(0, C.Spaces),
-          std::max((int)C.StartOfTokenColumn, C.Spaces) - std::max(0, C.Spaces),
-          C.IsAligned);
+      appendIndentText(ReplacementText, C.Tok->IndentLevel,
+                       std::max(0, (int)C.Spaces),
+                       std::max((int)C.StartOfTokenColumn, (int)C.Spaces) -
+                           std::max(0, (int)C.Spaces),
+                       C.IsAligned);
       ReplacementText.append(C.CurrentLinePrefix);
       storeReplacement(C.OriginalWhitespaceRange, ReplacementText);
     }

@@ -686,8 +686,9 @@ void ContinuationIndenter::addTokenOnCurrentLine(LineState &State, bool DryRun,
   }
 
   if (Current.is(TT_SelectorName) && !CurrentState.ObjCSelectorNameFound) {
-    unsigned MinIndent = std::max(
-        State.FirstIndent + Style.ContinuationIndentWidth, CurrentState.Indent);
+    unsigned MinIndent =
+        std::max((uint16_t)(State.FirstIndent + Style.ContinuationIndentWidth),
+                 CurrentState.Indent);
     unsigned FirstColonPos = State.Column + Spaces + Current.ColumnWidth;
     if (Current.LongestObjCSelectorName == 0)
       CurrentState.AlignColons = false;
@@ -913,7 +914,8 @@ unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
         CurrentState.ColonPos =
             (shouldIndentWrappedSelectorName(Style, State.Line->Type)
                  ? std::max(CurrentState.Indent,
-                            State.FirstIndent + Style.ContinuationIndentWidth)
+                            (uint16_t)(State.FirstIndent +
+                                       Style.ContinuationIndentWidth))
                  : CurrentState.Indent) +
             std::max(NextNonComment->LongestObjCSelectorName,
                      NextNonComment->ColumnWidth);
@@ -1089,7 +1091,7 @@ unsigned ContinuationIndenter::getNewLineColumn(const LineState &State) {
   if (Style.Language == FormatStyle::LK_Java &&
       Current.isOneOf(Keywords.kw_implements, Keywords.kw_extends)) {
     return std::max(CurrentState.LastSpace,
-                    CurrentState.Indent + Style.ContinuationIndentWidth);
+                    (uint16_t)(CurrentState.Indent + Style.ContinuationIndentWidth));
   }
 
   // After a goto label. Usually labels are on separate lines. However
@@ -1364,7 +1366,7 @@ unsigned ContinuationIndenter::moveStateToNextToken(LineState &State,
   if (!Current.opensScope() && !Current.closesScope() &&
       !Current.is(TT_PointerOrReference)) {
     State.LowestLevelOnLine =
-        std::min(State.LowestLevelOnLine, (unsigned)Current.NestingLevel);
+        std::min(State.LowestLevelOnLine, Current.NestingLevel);
   }
   if (Current.isMemberAccess())
     CurrentState.StartOfFunctionCall =
@@ -1610,11 +1612,11 @@ void ContinuationIndenter::moveStatePastScopeOpener(LineState &State,
     return;
   }
 
-  unsigned NewIndent;
-  unsigned LastSpace = CurrentState.LastSpace;
+  uint16_t NewIndent;
+  uint16_t LastSpace = CurrentState.LastSpace;
   bool AvoidBinPacking;
   bool BreakBeforeParameter = false;
-  unsigned NestedBlockIndent = std::max(CurrentState.StartOfFunctionCall,
+  uint16_t NestedBlockIndent = std::max(CurrentState.StartOfFunctionCall,
                                         CurrentState.NestedBlockIndent);
   if (Current.isOneOf(tok::l_brace, TT_ArrayInitializerLSquare) ||
       opensProtoMessageField(Current, Style)) {
@@ -1637,7 +1639,8 @@ void ContinuationIndenter::moveStatePastScopeOpener(LineState &State,
                                               TT_DesignatedInitializerLSquare));
     BreakBeforeParameter = EndsInComma;
     if (Current.ParameterCount() > 1)
-      NestedBlockIndent = std::max(NestedBlockIndent, State.Column + 1);
+      NestedBlockIndent =
+          std::max(NestedBlockIndent, (uint16_t)(State.Column + 1));
   } else {
     NewIndent =
         Style.ContinuationIndentWidth +
@@ -1770,7 +1773,7 @@ void ContinuationIndenter::moveStatePastScopeCloser(LineState &State) {
         *Current.Paren->MatchingParen->Previous;
     if (CurrentScopeOpener.is(TT_ObjCMethodExpr) &&
         CurrentScopeOpener.Paren->MatchingParen) {
-      int NecessarySpaceInLine =
+      unsigned NecessarySpaceInLine =
           getLengthToMatchingParen(CurrentScopeOpener, State.Stack) +
           CurrentScopeOpener.TotalLength - Current.TotalLength - 1;
       if (State.Column + Current.ColumnWidth + NecessarySpaceInLine <=

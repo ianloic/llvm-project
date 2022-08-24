@@ -127,8 +127,8 @@ public:
     // Changes might be in the middle of a token, so we cannot just keep the
     // FormatToken around to query its information.
     SourceRange OriginalWhitespaceRange;
-    unsigned StartOfTokenColumn;
-    unsigned NewlinesBefore;
+    uint16_t StartOfTokenColumn;
+    uint16_t NewlinesBefore;
     std::string PreviousLinePostfix;
     std::string CurrentLinePrefix;
     bool IsAligned;
@@ -139,7 +139,7 @@ public:
     // Can be negative to retain information about the initial relative offset
     // of the lines in a block comment. This is used when aligning trailing
     // comments. Uncompensated negative offset is truncated to 0.
-    int Spaces;
+    int16_t Spaces;
 
     // If this change is inside of a token but not at the start of the token or
     // directly after a newline.
@@ -149,9 +149,9 @@ public:
     // \c EscapedNewlineColumn will be calculated in
     // \c calculateLineBreakInformation.
     bool IsTrailingComment;
-    unsigned TokenLength;
-    unsigned PreviousEndOfTokenColumn;
-    unsigned EscapedNewlineColumn;
+    uint16_t TokenLength;
+    uint16_t PreviousEndOfTokenColumn;
+    uint16_t EscapedNewlineColumn;
 
     // These fields are used to retain correct relative line indentation in a
     // block comment when aligning trailing comments.
@@ -162,11 +162,11 @@ public:
     // change, so that the correct column can be reconstructed at the end of
     // the alignment process.
     const Change *StartOfBlockComment;
-    int IndentationOffset;
+    uint16_t IndentationOffset;
 
     // Depth of conditionals. Computed from tracking fake parenthesis, except
     // it does not increase the indent for "chained" conditionals.
-    int ConditionalsLevel;
+    uint16_t ConditionalsLevel;
 
     // A combination of indent, nesting and conditionals levels, which are used
     // in tandem to compute lexical scope, for the purposes of deciding
